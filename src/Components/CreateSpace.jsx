@@ -11,7 +11,7 @@ const CreateSpace = ({ dispatch }) => {
 
   const handleCreateSpace = () => {
     axios
-      .post(`${API_URL}/api/spaces`, {
+      .post(`${API_URL}/api/space`, {
         name: spaceName,
         description: spaceDescription,
       })

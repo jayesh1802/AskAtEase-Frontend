@@ -10,12 +10,18 @@ function useSpaces() {
   useEffect(() => {
     async function fetchSpaces() {
       try {
-        const response = await axios.get(`${API_URL}/api/spaces`);
+        const token = localStorage.getItem("token");
+        const response = await axios.get(`${API_URL}/api/space`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
         dispatch({ type: "all", spaces: response.data });
       } catch (error) {
         console.error("Error fetching spaces:", error.message);
       }
     }
+
     fetchSpaces();
   }, []);
 
@@ -34,23 +40,21 @@ export function SpaceProvider({ children }) {
 
 function spaceReducer(spaces, action) {
   switch (action.type) {
-    case "add": {
+    case "add":
       return [
         ...spaces,
         {
-          _id: action._id,
-          name: action.name,
+          spaceId: action.spaceId,
+          spaceName: action.spaceName,
           description: action.description,
-          questions: action.questions,
+          localDateTime: action.localDateTime || null,
+          userIds: action.userIds || [],
         },
       ];
-    }
-    case "all": {
+    case "all":
       return action.spaces;
-    }
-    default: {
+    default:
       console.error(`Unknown action type: ${action.type}`);
       return spaces;
-    }
   }
 }

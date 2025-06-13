@@ -3,15 +3,15 @@ import axios from "axios";
 import { API_URL } from "../utils/constants";
 import { QuestionsContext } from "../contexts/QuestionsContext";
 import { SpaceContext } from "../contexts/SpaceContext";
+import { AuthContext } from "../contexts/AuthContext";
 
 const AddQuestion2 = () => {
   const { spaces, fetchSpaces } = useContext(SpaceContext);
   const { dispatch } = useContext(QuestionsContext);
+  const { user } = useContext(AuthContext); 
 
   const [questionText, setQuestionText] = useState("");
-  const [selectedSpaceId, setSelectedSpaceId] = useState(""); 
-  const [userId, setUserId] = useState("jayh111"); 
-
+  const [selectedSpaceId, setSelectedSpaceId] = useState("");
   useEffect(() => {
     fetchSpaces(); 
   }, []);
@@ -19,25 +19,29 @@ const AddQuestion2 = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!questionText || !selectedSpaceId) {
-      alert("Please enter a question and select a space.");
+    if (!questionText || !selectedSpaceId || !user?.username) {
+      alert("Please enter a question, select a space, and ensure you're logged in.");
       return;
     }
 
     const payload = {
       question: questionText,
-      spaceIds: [parseInt(selectedSpaceId)], 
-      userId: userId,                      
-      createdAt: new Date().toISOString(),   
-      answers: []                           
+      spaceIds: [parseInt(selectedSpaceId)],
+      userId: user.username, 
+      createdAt: new Date().toISOString(),
+      answers: []
     };
 
     try {
-      const response = await axios.post(`${API_URL}/api/question`, payload);
+      const response = await axios.post(`${API_URL}/api/question`, payload, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
       alert("Question added successfully!");
       dispatch({
         type: "add",
-        ...response.data
+        ...response.data,
       });
       setQuestionText("");
       setSelectedSpaceId("");
@@ -46,6 +50,7 @@ const AddQuestion2 = () => {
       alert(err?.response?.data?.error || "Failed to add question.");
     }
   };
+
 
   return (
     <div>
