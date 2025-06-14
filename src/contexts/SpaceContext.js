@@ -4,40 +4,6 @@ import { API_URL } from "../utils/constants";
 
 export const SpaceContext = createContext(null);
 
-function useSpaces() {
-  const [spaces, dispatch] = useReducer(spaceReducer, []);
-
-  useEffect(() => {
-    async function fetchSpaces() {
-      try {
-        const token = localStorage.getItem("token");
-        const response = await axios.get(`${API_URL}/api/space`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        dispatch({ type: "all", spaces: response.data });
-      } catch (error) {
-        console.error("Error fetching spaces:", error.message);
-      }
-    }
-
-    fetchSpaces();
-  }, []);
-
-  return { spaces, dispatch };
-}
-
-export function SpaceProvider({ children }) {
-  const { spaces, dispatch } = useSpaces();
-
-  return (
-    <SpaceContext.Provider value={{ spaces, dispatch }}>
-      {children}
-    </SpaceContext.Provider>
-  );
-}
-
 function spaceReducer(spaces, action) {
   switch (action.type) {
     case "add":
@@ -57,4 +23,38 @@ function spaceReducer(spaces, action) {
       console.error(`Unknown action type: ${action.type}`);
       return spaces;
   }
+}
+
+function useSpaces() {
+  const [spaces, dispatch] = useReducer(spaceReducer, []);
+
+  const fetchSpaces = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.get(`${API_URL}/api/space`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      dispatch({ type: "all", spaces: response.data });
+    } catch (error) {
+      console.error("Error fetching spaces:", error.message);
+    }
+  };
+
+  useEffect(() => {
+    fetchSpaces();
+  }, []);
+
+  return { spaces, dispatch, fetchSpaces }; // ✅ RETURN fetchSpaces
+}
+
+export function SpaceProvider({ children }) {
+  const { spaces, dispatch, fetchSpaces } = useSpaces();
+
+  return (
+    <SpaceContext.Provider value={{ spaces, dispatch, fetchSpaces }}>
+      {children}
+    </SpaceContext.Provider>
+  );
 }

@@ -10,7 +10,12 @@ function useQuestions() {
   useEffect(() => {
     async function fetchQuestions() {
       try {
-        const response = await axios.get(`${API_URL}/api/questions`);
+        const token = localStorage.getItem("token");
+        const response = await axios.get(`${API_URL}/api/question/answer`,{
+          headers:{
+              Authorization:`Bearer ${token}`
+          },
+        });
         dispatch({ type: "all", questions: response.data });
       } catch (error) {
         console.error("Error fetching questions:", error.message);
